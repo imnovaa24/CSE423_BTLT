@@ -1,42 +1,69 @@
 import threading
+import random
+import math
 import time
 
-# Hàm thực thi của mỗi luồng
-def print_numbers(thread_name, delay):
-    """In ra các số từ 1 đến 5 với độ trễ giữa các lần in"""
-    count = 0
-    while count < 5:
-        time.sleep(delay)
-        count += 1
-        print(f"{thread_name}: {count}")
+class Lab1(threading.Thread):
+    def __init__(self, _id, A, bat_dau, ket_thuc):
+        super().__init__()
+        self.id = _id
+        self.A = A
+        self.starts = bat_dau
+        self.end = ket_thuc
+        self.dem_scp = 0
+    
+    def run(self):
+        for i in range(self.starts, self.end):
+            if self.scp(self.A[i]):
+                self.dem_scp += 1
+                print(f"T-{self.id}: {self.A[i]} - {time.strftime('%H:%M:%S', time.localtime())}")
+        
+        with khoa:
+            global tong_scp
+            tong_scp += self.dem_scp
 
-# Tạo các luồng
-thread1 = threading.Thread(target=print_numbers, args=("Thread-1", 1))
-thread2 = threading.Thread(target=print_numbers, args=("Thread-2", 2))
+    def scp(self, n):
+        cbh = math.isqrt(n)
+        return cbh * cbh == n
 
-# Khởi chạy các luồng
-thread1.start()
-thread2.start()
+if __name__ == "__main__":
+    while True:
+        try:
+            N = int(input("Nhập N: "))
+            if N <= 10:
+                print("N > 100!!!")
+                continue
+            break
+        except ValueError:
+            print("Vui lòng nhập số nguyên!")
 
-# Đợi tất cả các luồng hoàn thành
-thread1.join()
-thread2.join()
+    while True:
+        try:
+            k = int(input("Nhập k: "))
+            if k <= 1:
+                print("k > 1!!!")
+                continue
+            break
+        except ValueError:
+            print("Vui lòng nhập số nguyên!")
+    A = [random.randint(1, 100) for _ in range(N - 1)]
+    A.append(4)
+    tong_scp = 0
+    khoa = threading.Lock()
 
-print("Tất cả các luồng đã hoàn thành!")
-#Định nghĩa hàm thực thi: Hàm print_numbers sẽ được thực thi bởi mỗi luồng, in ra các số từ 1 đến 5 với độ trễ giữa các lần in.
+    print(f"\nMảng A được tạo với {N} phần tử ngẫu nhiên:")
+    print(A[:N])  
 
-#Tạo luồng:
+    spt = N // k
+    threads = []
 
-#threading.Thread() tạo một đối tượng luồng mới
+    for i in range(k):
+        starts = i * spt # Vị trí bắt đầu = chỉ số luồng * số phần tử mỗi luồng
+        end = (i + 1) * spt if i != k - 1 else N # Luồng cuối nhận phần dư
+        t = Lab1(i, A, starts, end)
+        threads.append(t)
+        t.start()
 
-#target chỉ định hàm sẽ được thực thi
-
-#args là các tham số truyền vào hàm target
-
-#Khởi chạy luồng:
-
-#start() bắt đầu thực thi luồng
-
-#Đợi luồng hoàn thành:
-
-#join() đảm bảo chương trình chính sẽ đợi đến khi luồng hoàn thành
+    for t in threads:
+        t.join()
+    print(f"\nTổng số số chính phương trong mảng: {tong_scp}")
